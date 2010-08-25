@@ -25,8 +25,11 @@ class Rack::StreamingProxy
         key = "HTTP_#{header.upcase.gsub('-', '_')}"
         proxy_request[header] = request.env[key] if request.env[key]
       end
-      proxy_request["X-Forwarded-For"] =
-        (request.env["X-Forwarded-For"].to_s.split(/, +/) + [request.env["REMOTE_ADDR"]]).join(", ")
+
+      proxy_request["X-Forwarded-For"] = (
+        request.env["X-Forwarded-For"].to_s.split(/, +/) + [request.env["REMOTE_ADDR"]]).join(", ")
+        proxy_request.basic_auth(*uri.userinfo.split(':')) if (uri.userinfo && uri.userinfo.index(':')
+      )
 
       @piper = Servolux::Piper.new 'r', :timeout => 30
 
